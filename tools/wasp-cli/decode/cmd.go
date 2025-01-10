@@ -21,6 +21,7 @@ func Init(rootCmd *cobra.Command) {
 	rootCmd.AddCommand(initDecodeGasFeePolicy())
 	rootCmd.AddCommand(initEncodeGasFeePolicy())
 	rootCmd.AddCommand(initDecodeGasLimits())
+	rootCmd.AddCommand(initEncodeGasLimits())
 }
 
 func initDecodeCmd() *cobra.Command {
@@ -146,4 +147,45 @@ func initDecodeGasLimits() *cobra.Command {
 			log.Printf("Current gas limits: %+v\n", limits.String())
 		},
 	}
+}
+
+func initEncodeGasLimits() *cobra.Command {
+	var (
+		maxGasPerBlock uint64
+		minGasPerRequest uint64
+		maxGasPerRequest uint64
+		maxGasExternalViewCall uint64
+	)
+
+	cmd := &cobra.Command {
+		Use:   "encode-gaslimits",
+		Short: "Translates gas limits parameters to Hex format",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			gasLimits := gas.Limits{
+				MaxGasPerBlock:         maxGasPerBlock,
+				MinGasPerRequest:       minGasPerRequest,
+				MaxGasPerRequest:       maxGasPerRequest,
+				MaxGasExternalViewCall: maxGasExternalViewCall,
+			}
+            if !gasLimits.IsValid() {
+                log.Printf("Warning: Invalid gas limits configuration\n")
+            }
+
+            log.Printf(iotago.EncodeHex(gasLimits.Bytes()))
+		},
+	}
+
+    cmd.Flags().Uint64Var(&maxGasPerBlock, "maxGasPerBlock", gas.LimitsDefault.MaxGasPerBlock,
+        "maximum gas per block")
+    cmd.Flags().Uint64Var(&minGasPerRequest, "minGasPerRequest", gas.LimitsDefault.MinGasPerRequest,
+        "minimum gas per request")
+    cmd.Flags().Uint64Var(&maxGasPerRequest, "maxGasPerRequest", gas.LimitsDefault.MaxGasPerRequest,
+        "maximum gas per request")
+    cmd.Flags().Uint64Var(&maxGasExternalViewCall, "maxGasExternalViewCall", gas.LimitsDefault.MaxGasExternalViewCall,
+        "maximum gas per external view call")
+
+    return cmd
+
+
 }
