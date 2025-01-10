@@ -20,6 +20,7 @@ func Init(rootCmd *cobra.Command) {
 	rootCmd.AddCommand(initDecodeMetadataCmd())
 	rootCmd.AddCommand(initDecodeGasFeePolicy())
 	rootCmd.AddCommand(initEncodeGasFeePolicy())
+	rootCmd.AddCommand(initDecodeGasLimits())
 }
 
 func initDecodeCmd() *cobra.Command {
@@ -131,4 +132,18 @@ func initEncodeGasFeePolicy() *cobra.Command {
 	cmd.Flags().Uint8Var(&validatorFeeShare, "validatorFeeShare", 101, "validator fee share (between 0 and 100)")
 
 	return cmd
+}
+
+func initDecodeGasLimits() *cobra.Command {
+	return &cobra.Command{
+		Use:   "decode-gaslimits <0x...>",
+		Short: "Translates gas limits from Hex to a humanly-readable format",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			bytes := hexutil.MustDecode(args[0])
+			limits, err := gas.LimitsFromBytes(bytes)
+			log.Check(err)
+			log.Printf("Current gas limits: %+v\n", limits.String())
+		},
+	}
 }
